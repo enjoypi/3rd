@@ -1,0 +1,8 @@
+child:
+  bool: true
+
+log:
+  level: info
+
+server:
+  listenAddress: 0.0.0.0:0
