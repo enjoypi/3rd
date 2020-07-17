@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -25,6 +24,6 @@ func childRun(v *viper.Viper) error {
 	if err := v.Unmarshal(&c); err != nil {
 		return err
 	}
-	logrus.Infof("settings on child: %+v", c)
+	logger.Sugar().Info("settings on child: %+v", c)
 	return nil
 }

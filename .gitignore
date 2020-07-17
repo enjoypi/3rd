@@ -1,5 +1,5 @@
 # Binaries for programs and plugins
-t4cobra
+3rd
 *.exe
 *.exe~
 *.dll

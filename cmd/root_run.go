@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -20,6 +19,6 @@ func run(v *viper.Viper) error {
 	if err := v.Unmarshal(&c); err != nil {
 		return err
 	}
-	logrus.Infof("settings: %+v", c)
+	logger.Sugar().Infof("settings: %+v", c)
 	return nil
 }

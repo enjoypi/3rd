@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/onlyzf/t4cobra/cmd"
+	"github.com/enjoypi/3rd/cmd"
 )
 
 func main() {

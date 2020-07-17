@@ -3,7 +3,7 @@
 input in term
 
 ```bash
-go build -v && ./t4cobra --config.file=app.yaml child --child.str=changed
+go build -v && ./3rd --config.file=app.yaml child --child.str=changed
 ```
 
 out

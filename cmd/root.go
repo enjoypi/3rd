@@ -3,14 +3,13 @@ package cmd
 import (
 	"bytes"
 	"context"
-	"time"
-
-	"gopkg.in/yaml.v2"
-
-	"github.com/coreos/etcd/clientv3"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.etcd.io/etcd/clientv3"
+	"go.uber.org/zap"
+	"gopkg.in/yaml.v2"
+	"strings"
+	"time"
 )
 
 var (
@@ -19,12 +18,13 @@ var (
 	configRemotePath     string
 	configType           string
 	logLevel             string
+	logger               *zap.Logger
 	rootViper            = viper.New()
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "t4cobra",
+	Use:   "3rd",
 	Short: "the template of cobra",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application`,
@@ -43,13 +43,11 @@ examples and usage of using your application`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logrus.Fatal(err)
+		logger.Fatal(err.Error())
 	}
 }
 
 func init() {
-	logrus.SetLevel(logrus.TraceLevel)
-	logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true, DisableColors: true})
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -62,28 +60,33 @@ func init() {
 		"the endpoint of remote config")
 	rootCmd.PersistentFlags().StringVar(&configRemotePath,
 		"config.remote.path",
-		"t4cobra/config",
+		"3rd/config",
 		"the path of remote config")
 
 	rootCmd.PersistentFlags().StringVar(&configType, "config.type", "yaml", "the type of config format")
 	rootCmd.PersistentFlags().BoolP("verbose", "V", false, "verbose")
 
-	rootCmd.PersistentFlags().StringVar(&logLevel, "log.level", "info", "level of logrus")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log.level", "info", "level of logger")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().Bool("version", false, "show version")
 }
 
-func preRunE(cmd *cobra.Command, args []string) error {
+func preRunE(cmd *cobra.Command, args []string) (err error) {
 
 	// use flag log.level
-	if lvl, err := logrus.ParseLevel(logLevel); err == nil {
-		logrus.SetLevel(lvl)
-		if lvl == logrus.TraceLevel {
-			logrus.SetReportCaller(true)
-		}
+	if strings.ToLower(logLevel) == "debug"{
+		logger, err = zap.NewDevelopment()
+	} else {
+		logger, err = zap.NewProduction()
 	}
+
+	if err != nil {
+		return err
+	}
+	sugar := logger.Sugar()
+	defer sugar.Sync()
 
 	// Viper uses the following precedence order. Each item takes precedence over the item below it:
 	//
@@ -111,8 +114,8 @@ func preRunE(cmd *cobra.Command, args []string) error {
 		if err := v.ReadInConfig(); err != nil {
 			return err
 		}
-		logrus.Debug("using config file: ", v.ConfigFileUsed())
-		logrus.Debug("local settings: ", v.AllSettings())
+		sugar.Debug("using config file: ", v.ConfigFileUsed())
+		sugar.Debug("local settings: ", v.AllSettings())
 	}
 
 	// env
@@ -124,16 +127,15 @@ func preRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	// log level in flags maybe wrong, reset
-	if lvl, err := logrus.ParseLevel(v.GetString("log.level")); err == nil {
-		logrus.SetLevel(lvl)
+	//if lvl := zap.LevelFlag(v.GetString("log.level"), zap.InfoLevel, ""); lvl != nil {
+	//	logger = logger.WithOptions(zap.NewAtomicLevel().SetLevel(zap.DebugLevel))
+	//	sugar.Warn("current log level: ", lvl.String())
+	//}
+	if out, err := yaml.Marshal(v.AllSettings()); err == nil {
+		sugar.Debug("all settings:\n", string(out))
 	} else {
-		logrus.SetLevel(logrus.InfoLevel)
-		logrus.Warn(err)
+		sugar.Debug("all settings: ", v.AllSettings())
 	}
-
-	logrus.Warn("current log level: ", logrus.GetLevel())
-
-	showConfig(v)
 	return nil
 }
 
@@ -142,36 +144,35 @@ func initRemoteConfig(v *viper.Viper) {
 		return
 	}
 
-	logrus.Info("reading from ", configRemoteEndpoint)
+	sugar := logger.Sugar()
+	defer sugar.Sync()
+
+	sugar.Info("reading from ", zap.String("etcd", configRemoteEndpoint))
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{configRemoteEndpoint},
 		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
-		logrus.Warn(err)
+		sugar.Warn(err)
 		return
 	}
 	defer cli.Close()
 
 	resp, err := cli.Get(context.Background(), configRemotePath)
 	if err != nil {
-		logrus.Warn(err)
+		sugar.Warn(err)
 		return
 	}
 
 	for _, kv := range resp.Kvs {
 		if err := v.MergeConfig(bytes.NewBuffer(kv.Value)); err == nil {
-			logrus.Debug("remote settings: ", v.AllSettings())
+			sugar.Debug("remote settings: ", v.AllSettings())
 		} else {
-			logrus.Warn(err)
+			sugar.Warn(err)
 		}
 	}
 }
 
 func showConfig(v *viper.Viper) {
-	if out, err := yaml.Marshal(v.AllSettings()); err == nil {
-		logrus.Debug("all settings:\n", string(out))
-	} else {
-		logrus.Debug("all settings: ", v.AllSettings())
-	}
+
 }
