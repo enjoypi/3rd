@@ -1,15 +1,12 @@
 package cmd
 
 import (
-	"bytes"
-	"context"
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
-	"strings"
-	"time"
 )
 
 var (
@@ -76,7 +73,7 @@ func init() {
 func preRunE(cmd *cobra.Command, args []string) (err error) {
 
 	// use flag log.level
-	if strings.ToLower(logLevel) == "debug"{
+	if strings.ToLower(logLevel) == "debug" {
 		logger, err = zap.NewDevelopment()
 	} else {
 		logger, err = zap.NewProduction()
@@ -140,37 +137,37 @@ func preRunE(cmd *cobra.Command, args []string) (err error) {
 }
 
 func initRemoteConfig(v *viper.Viper) {
-	if configRemoteEndpoint == "" {
-		return
-	}
-
-	sugar := logger.Sugar()
-	defer sugar.Sync()
-
-	sugar.Info("reading from ", zap.String("etcd", configRemoteEndpoint))
-	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{configRemoteEndpoint},
-		DialTimeout: 5 * time.Second,
-	})
-	if err != nil {
-		sugar.Warn(err)
-		return
-	}
-	defer cli.Close()
-
-	resp, err := cli.Get(context.Background(), configRemotePath)
-	if err != nil {
-		sugar.Warn(err)
-		return
-	}
-
-	for _, kv := range resp.Kvs {
-		if err := v.MergeConfig(bytes.NewBuffer(kv.Value)); err == nil {
-			sugar.Debug("remote settings: ", v.AllSettings())
-		} else {
-			sugar.Warn(err)
-		}
-	}
+	//if configRemoteEndpoint == "" {
+	//	return
+	//}
+	//
+	//sugar := logger.Sugar()
+	//defer sugar.Sync()
+	//
+	//sugar.Info("reading from ", zap.String("etcd", configRemoteEndpoint))
+	//cli, err := clientv3.New(clientv3.Config{
+	//	Endpoints:   []string{configRemoteEndpoint},
+	//	DialTimeout: 5 * time.Second,
+	//})
+	//if err != nil {
+	//	sugar.Warn(err)
+	//	return
+	//}
+	//defer cli.Close()
+	//
+	//resp, err := cli.Get(context.Background(), configRemotePath)
+	//if err != nil {
+	//	sugar.Warn(err)
+	//	return
+	//}
+	//
+	//for _, kv := range resp.Kvs {
+	//	if err := v.MergeConfig(bytes.NewBuffer(kv.Value)); err == nil {
+	//		sugar.Debug("remote settings: ", v.AllSettings())
+	//	} else {
+	//		sugar.Warn(err)
+	//	}
+	//}
 }
 
 func showConfig(v *viper.Viper) {
