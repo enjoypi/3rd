@@ -27,7 +27,7 @@ func init() {
 	serveCmd.Flags().String("nodepath", "nodes", "path of nodes info")
 	serveCmd.Flags().String("node.type", "default", "service type")
 	serveCmd.Flags().Uint16("node.id", 0, "service type")
-	serveCmd.Flags().String("ListenAddress", "", "listen address")
+	serveCmd.Flags().String("listenaddress", "", "listen address")
 }
 
 func serveRun(v *viper.Viper, logger *zap.Logger) error {
