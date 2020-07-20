@@ -8,6 +8,8 @@ go 1.14
 
 replace github.com/enjoypi/god => ../god
 
+replace github.com/enjoypi/gostatechart => ../gostatechart
+
 require (
 	github.com/enjoypi/god v0.0.0-00010101000000-000000000000
 	github.com/spf13/cobra v1.0.0

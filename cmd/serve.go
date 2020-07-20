@@ -37,5 +37,6 @@ func serveRun(v *viper.Viper, logger *zap.Logger) error {
 	}
 	logger.Sugar().Infof("god.Config:\n%+v", cfg)
 
-	return god.Start(&cfg, logger)
+	node := god.NewNode()
+	return node.Start(&cfg, logger)
 }
