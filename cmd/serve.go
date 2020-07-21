@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/enjoypi/3rd/player"
 	"github.com/enjoypi/god"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -37,6 +38,14 @@ func serveRun(v *viper.Viper, logger *zap.Logger) error {
 	}
 	logger.Sugar().Infof("god.Config:\n%+v", cfg)
 
-	node := god.NewNode()
-	return node.Start(&cfg, logger)
+	node, err := god.NewNode(&cfg, logger)
+	if err != nil {
+		return err
+	}
+
+	srv, err := node.NewService(1, &player.Manager{})
+	if err != nil {
+		return err
+	}
+	return srv.Serve(v.GetString("listenaddress"))
 }
