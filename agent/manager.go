@@ -1,19 +1,19 @@
-package player
+package agent
 
 import (
 	"github.com/enjoypi/god/pb"
-	"github.com/enjoypi/god/service"
+	"github.com/enjoypi/god/services/net"
 	sc "github.com/enjoypi/gostatechart"
 	"go.uber.org/zap"
 )
 
 type Manager struct {
 	sc.SimpleState
-	*service.Service
+	*net.Service
 }
 
 func (m *Manager) Begin(context interface{}, event sc.Event) sc.Event {
-	m.Service = context.(*service.Service)
+	m.Service = context.(*net.Service)
 	m.RegisterReaction((*pb.Header)(nil), m.onHeader)
 	return nil
 }

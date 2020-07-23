@@ -1,8 +1,11 @@
 package cmd
 
 import (
-	"github.com/enjoypi/3rd/player"
+	"github.com/enjoypi/3rd/agent"
+	"github.com/enjoypi/3rd/conf"
 	"github.com/enjoypi/god"
+	"github.com/enjoypi/god/services/mesh"
+	"github.com/enjoypi/god/services/net"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -23,12 +26,15 @@ and usage of using your command.`,
 func init() {
 	rootCmd.AddCommand(serveCmd)
 
-	serveCmd.Flags().StringArray("etcd.endpoints", []string{"127.0.0.1:2379"}, "string flag for child")
-	serveCmd.Flags().Int64("etcdttl", 10, "ttl to etcd")
-	serveCmd.Flags().String("nodepath", "nodes", "path of nodes info")
+	serveCmd.Flags().Int64("mesh.grantttl", 10, "ttl to etcd")
+	serveCmd.Flags().String("mesh.defaulttimeout", "0", "ttl to etcd")
+	serveCmd.Flags().String("mesh.path", "nodes", "listen address")
+	serveCmd.Flags().StringSlice("etcd.endpoints", []string{"127.0.0.1:2379"}, "string flag for child")
+	serveCmd.Flags().Bool("etcd.PermitWithoutStream", true, "ensures that the keepalive logic is running even without any active streams")
+
+	serveCmd.Flags().String("net.listenaddress", "", "listen address")
 	serveCmd.Flags().String("node.type", "default", "service type")
 	serveCmd.Flags().Uint16("node.id", 0, "service type")
-	serveCmd.Flags().String("listenaddress", "", "listen address")
 }
 
 func serveRun(v *viper.Viper, logger *zap.Logger) error {
@@ -43,9 +49,41 @@ func serveRun(v *viper.Viper, logger *zap.Logger) error {
 		return err
 	}
 
-	srv, err := node.NewService(1, &player.Manager{})
+	err = newMesh(v, logger, node)
 	if err != nil {
 		return err
 	}
-	return srv.Serve(v.GetString("listenaddress"))
+
+	if err := newNet(v, logger, node); err != nil {
+		return err
+	}
+
+	return node.Serve()
+}
+
+func newMesh(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
+	var meshCfg mesh.Config
+	if err := v.Unmarshal(&meshCfg); err != nil {
+		return err
+	}
+	logger.Sugar().Infof("mesh.Config:\n%+v", meshCfg)
+
+	return node.AddService(conf.MeshService, mesh.NewService(meshCfg, logger))
+}
+
+func newNet(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
+	var cfg net.Config
+	if err := v.Unmarshal(&cfg); err != nil {
+		return err
+	}
+	logger.Sugar().Infof("net.Config:\n%+v", cfg)
+
+	svc := net.NewService(
+		cfg,
+		logger,
+		(*agent.Manager)(nil),
+		(*agent.StateActive)(nil),
+	)
+
+	return node.AddService(conf.AgentService, svc)
 }
