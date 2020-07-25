@@ -42,7 +42,8 @@ bin/genmsgid: protocol
 	@go build -o bin/genmsgid  git.tap4fun.com/fw/gate/utility/genmsgid
 
 # Format all sources
-fmt: $(GO_FILES)
+fmt: GO_FILES=$(wildcard *.go) $(wildcard */*.go) $(wildcard */*/*.go)
+fmt:
 	goimports -w $(GO_FILES)
 
 # Delete all files that are normally created by running make.
