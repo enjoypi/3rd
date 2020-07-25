@@ -13,7 +13,7 @@ type stateClosing struct {
 func (s *stateClosing) Begin(context interface{}, event sc.Event) sc.Event {
 	session := context.(*net.Session)
 	session.Logger.Info("closing", zap.Any("event", event))
-	<-session.Context().Done()
+	//<-session.Context().Done()
 	s.Outermost().Terminate(event)
 	return nil
 }

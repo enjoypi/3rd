@@ -27,7 +27,7 @@ func init() {
 	rootCmd.AddCommand(serveCmd)
 
 	serveCmd.Flags().Int64("mesh.grantttl", 10, "ttl to etcd")
-	serveCmd.Flags().String("mesh.defaulttimeout", "0", "ttl to etcd")
+	serveCmd.Flags().String("mesh.defaulttimeout", "10s", "ttl to etcd")
 	serveCmd.Flags().String("mesh.path", "nodes", "listen address")
 	serveCmd.Flags().StringSlice("etcd.endpoints", []string{"127.0.0.1:2379"}, "string flag for child")
 	serveCmd.Flags().Bool("etcd.PermitWithoutStream", true, "ensures that the keepalive logic is running even without any active streams")

@@ -47,12 +47,19 @@ func (state *stateGame) GetEvent() sc.Event {
 		req = &pb.Heartbeat{}
 	case "pb.Echo":
 		req = &pb.Echo{}
+	default:
+		return nil
 	}
 
 	if err := session.RecvMsg(req); err != nil {
 		return err
 	}
+
 	session.Info(req.String(), zap.String("type", reflect.TypeOf(req).String()))
+	if !state.HasReaction(req) {
+		// TODO Post To Manager
+		return nil
+	}
 	return req
 }
 

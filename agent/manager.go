@@ -18,10 +18,6 @@ func (m *Manager) Begin(context interface{}, event sc.Event) sc.Event {
 	return nil
 }
 
-func (m *Manager) GetTransitions() sc.Transitions {
-	return nil
-}
-
 func (m *Manager) onHeader(event sc.Event) sc.Event {
 	m.Logger.Info("onHeader", zap.Any("event", event))
 	return nil

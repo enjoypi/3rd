@@ -43,7 +43,7 @@ bin/genmsgid: protocol
 
 # Format all sources
 fmt: $(GO_FILES)
-	goimports -w $(GO_FILES)
+	goimports -v -w $(GO_FILES)
 
 # Delete all files that are normally created by running make.
 clean:
