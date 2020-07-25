@@ -26,9 +26,10 @@ and usage of using your command.`,
 func init() {
 	rootCmd.AddCommand(serveCmd)
 
-	serveCmd.Flags().Int64("mesh.grantttl", 10, "ttl to etcd")
 	serveCmd.Flags().String("mesh.defaulttimeout", "10s", "ttl to etcd")
+	serveCmd.Flags().Int64("mesh.grantttl", 10, "ttl to etcd")
 	serveCmd.Flags().String("mesh.path", "nodes", "listen address")
+	serveCmd.Flags().Int("mesh.retrytimes", 10, "times to retry when dialing etcd")
 	serveCmd.Flags().StringSlice("etcd.endpoints", []string{"127.0.0.1:2379"}, "string flag for child")
 	serveCmd.Flags().Bool("etcd.PermitWithoutStream", true, "ensures that the keepalive logic is running even without any active streams")
 
@@ -68,7 +69,7 @@ func newMesh(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
 	}
 	logger.Sugar().Infof("mesh.Config:\n%+v", meshCfg)
 
-	return node.AddService(conf.MeshService, mesh.NewService(meshCfg, logger))
+	return node.AddService(conf.MeshService, mesh.NewService(meshCfg, logger, node))
 }
 
 func newNet(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
@@ -81,6 +82,7 @@ func newNet(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
 	svc := net.NewService(
 		cfg,
 		logger,
+		node,
 		(*agent.Manager)(nil),
 		(*agent.StateActive)(nil),
 	)
