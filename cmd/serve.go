@@ -6,6 +6,7 @@ import (
 	"github.com/enjoypi/god/pb"
 	"github.com/enjoypi/god/services/mesh"
 	"github.com/enjoypi/god/services/net"
+	"github.com/enjoypi/god/transports/message_bus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -36,6 +37,9 @@ func init() {
 	serveCmd.Flags().StringSlice("etcd.endpoints", []string{"127.0.0.1:2379"}, "endpoints of etcd")
 	serveCmd.Flags().Bool("etcd.permitwithoutstream", true, "ensures that the keepalive logic is running even without any active streams")
 
+	serveCmd.Flags().String("nats.url", "nats://127.0.0.1:4222", "nats url")
+	//serveCmd.Flags().String("nats.readtimeout", "10s", "default ")
+
 	serveCmd.Flags().String("net.listenaddress", "", "listen address")
 
 	serveCmd.Flags().String("node.type", "default", "service type")
@@ -58,8 +62,12 @@ func serveRun(v *viper.Viper, logger *zap.Logger) error {
 	if err != nil {
 		return err
 	}
+	//
+	//if err := newMeshServer(v, logger, node); err != nil {
+	//	return err
+	//}
 
-	if err := newMeshServer(v, logger, node); err != nil {
+	if err := newMessageBus(v, logger, node); err != nil {
 		return err
 	}
 
@@ -77,25 +85,41 @@ func newMesh(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
 	}
 	logger.Sugar().Infof("mesh config:\n%+v", meshCfg)
 
-	return node.AddService(pb.ServiceType_Mesh, mesh.NewService(meshCfg, logger, node))
+	return node.AddService(pb.ServiceType_Mesh, mesh.NewService(meshCfg, logger, pb.TransportType_MessageBus))
 }
 
-func newMeshServer(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
-	var cfg mesh.Config
+//func newMeshServer(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
+//	var cfg mesh.Config
+//	if err := v.Unmarshal(&cfg); err != nil {
+//		return err
+//	}
+//	logger.Sugar().Infof("mesh server config:\n%+v", cfg.Mesh.Net)
+//
+//	svc := net.NewService(
+//		cfg.Mesh.Net,
+//		logger,
+//		node,
+//		(*mesh.Manager)(nil),
+//		(*mesh.Session)(nil),
+//	)
+//
+//	return node.AddService(pb.ServiceType_Receiver, svc)
+//}
+//
+func newMessageBus(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
+	var cfg message_bus.Config
 	if err := v.Unmarshal(&cfg); err != nil {
 		return err
 	}
-	logger.Sugar().Infof("mesh server config:\n%+v", cfg.Mesh.Net)
+	logger.Sugar().Infof("NATS config:\n%+v", cfg)
 
-	svc := net.NewService(
-		cfg.Mesh.Net,
+	trans := message_bus.NewTransport(
+		cfg,
 		logger,
-		node,
-		(*mesh.Manager)(nil),
-		(*mesh.Session)(nil),
+		node.ID,
 	)
 
-	return node.AddService(pb.ServiceType_Receiver, svc)
+	return node.AddTransport(pb.TransportType_MessageBus, trans)
 }
 
 func newNet(v *viper.Viper, logger *zap.Logger, node *god.Node) error {

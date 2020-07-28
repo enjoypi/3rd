@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"bytes"
 	"reflect"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/enjoypi/god/services/net"
 	sc "github.com/enjoypi/gostatechart"
 	"github.com/golang/protobuf/proto"
+	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 )
 
@@ -15,12 +17,19 @@ type stateGame struct {
 	sc.SimpleState
 
 	*net.Session
+	agentSub *nats.Subscription
 }
 
 func (state *stateGame) Begin(context interface{}, event sc.Event) sc.Event {
 	state.Session = context.(*net.Session)
 
 	state.registerReactions()
+
+	var err error
+	state.agentSub, err = state.Node.Subscribe("agent.1.*", state.onNatsMsg)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -77,4 +86,34 @@ func (state *stateGame) onHeartbeat(event sc.Event) sc.Event {
 	req := event.(*pb.Heartbeat)
 	req.ToTimestamp = time.Now().UnixNano()
 	return state.Session.SendMsg(req)
+}
+
+func (state *stateGame) onNatsMsg(msg *nats.Msg) {
+	buf := bytes.NewBuffer(msg.Data)
+	var header pb.Header
+	if err := header.Unmarshal(buf.Bytes()); err != nil {
+		state.Logger.Warn("NATS error", zap.Error(err))
+		return
+	}
+
+	switch header.MessageType {
+	case "pb.Heartbeat":
+		//msg0 := reflect.New(reflect.TypeOf(pb.Heartbeat{}).Elem()).Interface().(proto.Message)
+		req := &pb.Heartbeat{}
+		if err := req.Unmarshal(buf.Bytes()); err != nil {
+			state.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
+			return
+		}
+		state.Outermost().PostEvent(req)
+	case "pb.Echo":
+		req := &pb.Echo{}
+		if err := req.Unmarshal(buf.Bytes()); err != nil {
+			state.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
+			return
+		}
+		state.Outermost().PostEvent(req)
+	default:
+		return
+	}
+
 }
