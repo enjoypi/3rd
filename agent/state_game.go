@@ -2,6 +2,7 @@ package agent
 
 import (
 	"bytes"
+	"encoding/binary"
 	"reflect"
 	"time"
 
@@ -26,7 +27,8 @@ func (state *stateGame) Begin(context interface{}, event sc.Event) sc.Event {
 	state.registerReactions()
 
 	var err error
-	state.agentSub, err = state.Node.Subscribe("agent.1.*", state.onNatsMsg)
+	//state.agentSub, err = state.Node.Subscribe("agent.1.*", state.onNatsMsg)
+	state.agentSub, err = state.Node.Subscribe(">", state.onNatsMsg)
 	if err != nil {
 		return err
 	}
@@ -79,7 +81,8 @@ func (state *stateGame) registerReactions() {
 
 func (state *stateGame) onEcho(event sc.Event) sc.Event {
 	req := event.(*pb.Echo)
-	return state.Session.SendMsg(req)
+	return state.Node.CastTo(pb.ServiceType_Mesh, req)
+	//return state.Session.SendMsg(req)
 }
 
 func (state *stateGame) onHeartbeat(event sc.Event) sc.Event {
@@ -89,25 +92,34 @@ func (state *stateGame) onHeartbeat(event sc.Event) sc.Event {
 }
 
 func (state *stateGame) onNatsMsg(msg *nats.Msg) {
+	state.Logger.Debug("onNatsMsg", zap.String("subject", msg.Subject), zap.Int("size", len(msg.Data)))
 	buf := bytes.NewBuffer(msg.Data)
+	var l uint16
+	if err := binary.Read(buf, binary.LittleEndian, &l); err != nil {
+		state.Logger.Warn("onNatsMsg error", zap.Error(err))
+		return
+	}
+	sizeofLen := 2
+
 	var header pb.Header
-	if err := header.Unmarshal(buf.Bytes()); err != nil {
+	if err := header.Unmarshal(msg.Data[sizeofLen : sizeofLen+int(l)]); err != nil {
 		state.Logger.Warn("NATS error", zap.Error(err))
 		return
 	}
+	state.Logger.Debug("header", zap.String("type", header.MessageType))
 
 	switch header.MessageType {
 	case "pb.Heartbeat":
 		//msg0 := reflect.New(reflect.TypeOf(pb.Heartbeat{}).Elem()).Interface().(proto.Message)
 		req := &pb.Heartbeat{}
-		if err := req.Unmarshal(buf.Bytes()); err != nil {
+		if err := req.Unmarshal(msg.Data[sizeofLen+int(l)+sizeofLen:]); err != nil {
 			state.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
 			return
 		}
 		state.Outermost().PostEvent(req)
 	case "pb.Echo":
 		req := &pb.Echo{}
-		if err := req.Unmarshal(buf.Bytes()); err != nil {
+		if err := req.Unmarshal(msg.Data[sizeofLen+int(l)+sizeofLen:]); err != nil {
 			state.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
 			return
 		}

@@ -6,7 +6,7 @@ import (
 	"github.com/enjoypi/god/pb"
 	"github.com/enjoypi/god/services/mesh"
 	"github.com/enjoypi/god/services/net"
-	"github.com/enjoypi/god/transports/message_bus"
+	mb "github.com/enjoypi/god/transports/message_bus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -67,10 +67,6 @@ func serveRun(v *viper.Viper, logger *zap.Logger) error {
 	//	return err
 	//}
 
-	if err := newMessageBus(v, logger, node); err != nil {
-		return err
-	}
-
 	if err := newNet(v, logger, node); err != nil {
 		return err
 	}
@@ -85,7 +81,9 @@ func newMesh(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
 	}
 	logger.Sugar().Infof("mesh config:\n%+v", meshCfg)
 
-	return node.AddService(pb.ServiceType_Mesh, mesh.NewService(meshCfg, logger, pb.TransportType_MessageBus))
+	trans := newMessageBus(v, logger, node)
+	node.AddTransport(pb.TransportType_MessageBus, trans)
+	return node.AddService(pb.ServiceType_Mesh, mesh.NewService(meshCfg, logger, trans))
 }
 
 //func newMeshServer(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
@@ -106,20 +104,18 @@ func newMesh(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
 //	return node.AddService(pb.ServiceType_Receiver, svc)
 //}
 //
-func newMessageBus(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
-	var cfg message_bus.Config
+func newMessageBus(v *viper.Viper, logger *zap.Logger, node *god.Node) *mb.Transport {
+	var cfg mb.Config
 	if err := v.Unmarshal(&cfg); err != nil {
-		return err
+		return nil
 	}
 	logger.Sugar().Infof("NATS config:\n%+v", cfg)
 
-	trans := message_bus.NewTransport(
+	return mb.NewTransport(
 		cfg,
 		logger,
 		node.ID,
 	)
-
-	return node.AddTransport(pb.TransportType_MessageBus, trans)
 }
 
 func newNet(v *viper.Viper, logger *zap.Logger, node *god.Node) error {
