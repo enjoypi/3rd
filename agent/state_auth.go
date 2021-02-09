@@ -2,14 +2,13 @@ package agent
 
 import (
 	"github.com/enjoypi/god/pb"
-	"github.com/enjoypi/god/services/net"
 	sc "github.com/enjoypi/gostatechart"
 )
 
 type stateAuth struct {
 	sc.SimpleState
 
-	*net.Session
+	//*net.Session
 }
 
 func (state *stateAuth) GetTransitions() sc.Transitions {
@@ -19,23 +18,23 @@ func (state *stateAuth) GetTransitions() sc.Transitions {
 }
 
 func (state *stateAuth) Begin(context interface{}, event sc.Event) sc.Event {
-	state.Session = context.(*net.Session)
-	var header pb.Header
-	if err := state.Session.RecvMsg(&header); err != nil {
-		return err
-	}
+	//state.Session = context.(*net.Session)
+	//var header pb.Header
+	//if err := state.Session.RecvMsg(&header); err != nil {
+	//	return err
+	//}
 	var req pb.AuthReq
-	if err := state.Session.RecvMsg(&req); err != nil {
-		return err
-	}
+	//if err := state.Session.RecvMsg(&req); err != nil {
+	//	return err
+	//}
 	return state.onAuthReq(&req)
 }
 
 func (state *stateAuth) onAuthReq(req *pb.AuthReq) sc.Event {
-	session := state.Session
+	//session := state.Session
 
 	var ack pb.AuthAck
-	defer session.SendMsg(&ack)
+	//defer session.SendMsg(&ack)
 
 	// signature := req.Signature
 	// TODO 到Entrance验签

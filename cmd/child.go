@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // doCmd represents the do command
@@ -21,4 +22,13 @@ func init() {
 
 	childCmd.Flags().String("child.str", "child string", "string flag for child")
 	childCmd.Flags().BoolP("child.bool", "b", false, "bool flag for child")
+}
+
+func childRun(v *viper.Viper) error {
+	var c cfgChild
+	if err := v.Unmarshal(&c); err != nil {
+		return err
+	}
+	logger.Sugar().Info("settings on child: %+v", c)
+	return nil
 }

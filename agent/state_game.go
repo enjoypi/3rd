@@ -3,11 +3,11 @@ package agent
 import (
 	"bytes"
 	"encoding/binary"
-	"reflect"
 	"time"
 
+	"github.com/enjoypi/god"
+
 	"github.com/enjoypi/god/pb"
-	"github.com/enjoypi/god/services/net"
 	sc "github.com/enjoypi/gostatechart"
 	"github.com/golang/protobuf/proto"
 	"github.com/nats-io/nats.go"
@@ -17,18 +17,18 @@ import (
 type stateGame struct {
 	sc.SimpleState
 
-	*net.Session
+	//*net.Session
 	agentSub *nats.Subscription
 }
 
 func (state *stateGame) Begin(context interface{}, event sc.Event) sc.Event {
-	state.Session = context.(*net.Session)
+	//state.Session = context.(*net.Session)
 
 	state.registerReactions()
 
 	var err error
 	//state.agentSub, err = state.Node.Subscribe("agent.1.*", state.onNatsMsg)
-	state.agentSub, err = state.Node.Subscribe(">", state.onNatsMsg)
+	//state.agentSub, err = state.Node.Subscribe(">", state.onNatsMsg)
 	if err != nil {
 		return err
 	}
@@ -37,12 +37,12 @@ func (state *stateGame) Begin(context interface{}, event sc.Event) sc.Event {
 }
 
 func (state *stateGame) GetEvent() sc.Event {
-	session := state.Session
+	//session := state.Session
 
 	var header pb.Header
-	if err := session.RecvMsg(&header); err != nil {
-		return err
-	}
+	//if err := session.RecvMsg(&header); err != nil {
+	//	return err
+	//}
 
 	//typ, ok := p.id2type[header.MessageType]
 	//if !ok {
@@ -62,11 +62,11 @@ func (state *stateGame) GetEvent() sc.Event {
 		return nil
 	}
 
-	if err := session.RecvMsg(req); err != nil {
-		return err
-	}
+	//if err := session.RecvMsg(req); err != nil {
+	//	return err
+	//}
 
-	session.Info(req.String(), zap.String("type", reflect.TypeOf(req).String()))
+	//session.Info(req.String(), zap.String("type", reflect.TypeOf(req).String()))
 	if !state.HasReaction(req) {
 		// TODO Post To Manager
 		return nil
@@ -80,47 +80,49 @@ func (state *stateGame) registerReactions() {
 }
 
 func (state *stateGame) onEcho(event sc.Event) sc.Event {
-	req := event.(*pb.Echo)
-	return state.Node.CastTo(pb.ServiceType_Mesh, req)
+	//req := event.(*pb.Echo)
+	//return state.Node.CastTo(pb.ServiceType_Mesh, req)
 	//return state.Session.SendMsg(req)
+	return nil
 }
 
 func (state *stateGame) onHeartbeat(event sc.Event) sc.Event {
 	req := event.(*pb.Heartbeat)
 	req.ToTimestamp = time.Now().UnixNano()
-	return state.Session.SendMsg(req)
+	//return state.Session.SendMsg(req)
+	return nil
 }
 
 func (state *stateGame) onNatsMsg(msg *nats.Msg) {
-	state.Logger.Debug("onNatsMsg", zap.String("subject", msg.Subject), zap.Int("size", len(msg.Data)))
+	god.Logger.Debug("onNatsMsg", zap.String("subject", msg.Subject), zap.Int("size", len(msg.Data)))
 	buf := bytes.NewBuffer(msg.Data)
 	var l uint16
 	if err := binary.Read(buf, binary.LittleEndian, &l); err != nil {
-		state.Logger.Warn("onNatsMsg error", zap.Error(err))
+		god.Logger.Warn("onNatsMsg error", zap.Error(err))
 		return
 	}
 	sizeofLen := 2
 
 	var header pb.Header
 	if err := header.Unmarshal(msg.Data[sizeofLen : sizeofLen+int(l)]); err != nil {
-		state.Logger.Warn("NATS error", zap.Error(err))
+		god.Logger.Warn("NATS error", zap.Error(err))
 		return
 	}
-	state.Logger.Debug("header", zap.String("type", header.MessageType))
+	god.Logger.Debug("header", zap.String("type", header.MessageType))
 
 	switch header.MessageType {
 	case "pb.Heartbeat":
 		//msg0 := reflect.New(reflect.TypeOf(pb.Heartbeat{}).Elem()).Interface().(proto.Message)
 		req := &pb.Heartbeat{}
 		if err := req.Unmarshal(msg.Data[sizeofLen+int(l)+sizeofLen:]); err != nil {
-			state.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
+			god.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
 			return
 		}
 		state.Outermost().PostEvent(req)
 	case "pb.Echo":
 		req := &pb.Echo{}
 		if err := req.Unmarshal(msg.Data[sizeofLen+int(l)+sizeofLen:]); err != nil {
-			state.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
+			god.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
 			return
 		}
 		state.Outermost().PostEvent(req)

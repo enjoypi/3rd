@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"strings"
+
+	"github.com/enjoypi/god"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -40,7 +43,7 @@ examples and usage of using your application`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logger.Fatal(err.Error())
+		fmt.Println(err.Error())
 	}
 }
 
@@ -82,8 +85,7 @@ func preRunE(cmd *cobra.Command, args []string) (err error) {
 	if err != nil {
 		return err
 	}
-	sugar := logger.Sugar()
-	defer sugar.Sync()
+	god.ReplaceLogger(logger)
 
 	// Viper uses the following precedence order. Each item takes precedence over the item below it:
 	//
@@ -111,8 +113,7 @@ func preRunE(cmd *cobra.Command, args []string) (err error) {
 		if err := v.ReadInConfig(); err != nil {
 			return err
 		}
-		sugar.Debug("using config file: ", v.ConfigFileUsed())
-		sugar.Debug("local settings: ", v.AllSettings())
+		logger.Info("using config file: ", zap.String("file", v.ConfigFileUsed()))
 	}
 
 	// env
@@ -129,9 +130,9 @@ func preRunE(cmd *cobra.Command, args []string) (err error) {
 	//	sugar.Warn("current log level: ", lvl.String())
 	//}
 	if out, err := yaml.Marshal(v.AllSettings()); err == nil {
-		sugar.Debug("all settings:\n", string(out))
+		logger.Info("all settings:", zap.String("settings", string(out)))
 	} else {
-		sugar.Debug("all settings: ", v.AllSettings())
+		logger.Info("all settings: ", zap.Any("settings", v.AllSettings()))
 	}
 	return nil
 }
