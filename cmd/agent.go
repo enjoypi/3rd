@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/enjoypi/3rd/agent"
+	//"github.com/enjoypi/3rd/agent"
 	"github.com/enjoypi/god"
 	"github.com/enjoypi/god/core"
 	"github.com/spf13/cobra"
@@ -49,6 +49,6 @@ func serveRun(v *viper.Viper, logger *zap.Logger) error {
 	}
 	logger.Info("god.Config", zap.Any("config", cfg))
 
-	god.PanicOnError(core.StartService(agent.NewService()))
+	//god.PanicOnError(core.StartService(agent.NewService()))
 	return core.Serve()
 }

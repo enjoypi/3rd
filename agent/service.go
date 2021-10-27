@@ -1,6 +1,6 @@
 package agent
 
-import "github.com/enjoypi/god/core"
+//import "github.com/enjoypi/god/core"
 
 type Service struct {
 }
@@ -16,6 +16,6 @@ func (s Service) Start() error {
 func (s Service) Stop() {
 }
 
-func NewService() core.Service {
-	return &Service{}
-}
+//func NewService() core.Service {
+//	return &Service{}
+//}

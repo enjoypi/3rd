@@ -6,12 +6,11 @@ import (
 	"time"
 
 	"github.com/enjoypi/god"
-
 	"github.com/enjoypi/god/pb"
 	sc "github.com/enjoypi/gostatechart"
-	"github.com/golang/protobuf/proto"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 type stateGame struct {
@@ -101,30 +100,30 @@ func (state *stateGame) onNatsMsg(msg *nats.Msg) {
 		god.Logger.Warn("onNatsMsg error", zap.Error(err))
 		return
 	}
-	sizeofLen := 2
+	//sizeofLen := 2
 
 	var header pb.Header
-	if err := header.Unmarshal(msg.Data[sizeofLen : sizeofLen+int(l)]); err != nil {
-		god.Logger.Warn("NATS error", zap.Error(err))
-		return
-	}
+	//if err := header.Unmarshal(msg.Data[sizeofLen : sizeofLen+int(l)]); err != nil {
+	//	god.Logger.Warn("NATS error", zap.Error(err))
+	//	return
+	//}
 	god.Logger.Debug("header", zap.String("type", header.MessageType))
 
 	switch header.MessageType {
 	case "pb.Heartbeat":
 		//msg0 := reflect.New(reflect.TypeOf(pb.Heartbeat{}).Elem()).Interface().(proto.Message)
 		req := &pb.Heartbeat{}
-		if err := req.Unmarshal(msg.Data[sizeofLen+int(l)+sizeofLen:]); err != nil {
-			god.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
-			return
-		}
+		//if err := req.Unmarshal(msg.Data[sizeofLen+int(l)+sizeofLen:]); err != nil {
+		//	god.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
+		//	return
+		//}
 		state.Outermost().PostEvent(req)
 	case "pb.Echo":
 		req := &pb.Echo{}
-		if err := req.Unmarshal(msg.Data[sizeofLen+int(l)+sizeofLen:]); err != nil {
-			god.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
-			return
-		}
+		//if err := req.Unmarshal(msg.Data[sizeofLen+int(l)+sizeofLen:]); err != nil {
+		//	god.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
+		//	return
+		//}
 		state.Outermost().PostEvent(req)
 	default:
 		return
