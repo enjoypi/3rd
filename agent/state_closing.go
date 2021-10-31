@@ -1,7 +1,7 @@
 package agent
 
 import (
-	"github.com/enjoypi/god/stdlib"
+	"github.com/enjoypi/god/logger"
 	sc "github.com/enjoypi/gostatechart"
 	"go.uber.org/zap"
 )
@@ -12,7 +12,7 @@ type stateClosing struct {
 
 func (s *stateClosing) Begin(context interface{}, event sc.Event) sc.Event {
 	//session := context.(*net.Session)
-	stdlib.L.Info("closing", zap.Any("event", event))
+	logger.L.Info("closing", zap.Any("event", event))
 	//<-session.Context().Done()
 	s.Outermost().Terminate(event)
 	return nil

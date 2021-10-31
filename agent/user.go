@@ -1,9 +1,8 @@
 package agent
 
 import (
-	"math/rand"
-
 	"github.com/enjoypi/god/types"
+	"github.com/spf13/viper"
 
 	"github.com/enjoypi/god/stdlib"
 )
@@ -12,23 +11,19 @@ type UserAgent struct {
 	stdlib.DefaultActor
 }
 
-var (
-	userAgentType = rand.Int63()
-)
-
 func init() {
-	stdlib.RegisterActorCreator(userAgentType, NewUserAgent)
+	stdlib.RegisterActorCreator("agent", NewUserAgent)
 }
 
 func NewUserAgent() stdlib.Actor {
 	return &UserAgent{}
 }
 
-func (u *UserAgent) Handle(message types.Message) types.Message {
+func (u *UserAgent) Handle(message types.Message) error {
 	return nil
 }
 
-func (u *UserAgent) Initialize() error {
+func (u *UserAgent) Initialize(v *viper.Viper) error {
 	_ = u.DefaultActor.Initialize()
 	return nil
 }

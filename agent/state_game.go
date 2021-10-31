@@ -5,8 +5,8 @@ import (
 	"encoding/binary"
 	"time"
 
+	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/pb"
-	"github.com/enjoypi/god/stdlib"
 	sc "github.com/enjoypi/gostatechart"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
@@ -93,11 +93,11 @@ func (state *stateGame) onHeartbeat(event sc.Event) sc.Event {
 }
 
 func (state *stateGame) onNatsMsg(msg *nats.Msg) {
-	stdlib.L.Debug("onNatsMsg", zap.String("subject", msg.Subject), zap.Int("size", len(msg.Data)))
+	logger.L.Debug("onNatsMsg", zap.String("subject", msg.Subject), zap.Int("size", len(msg.Data)))
 	buf := bytes.NewBuffer(msg.Data)
 	var l uint16
 	if err := binary.Read(buf, binary.LittleEndian, &l); err != nil {
-		stdlib.L.Warn("onNatsMsg error", zap.Error(err))
+		logger.L.Warn("onNatsMsg error", zap.Error(err))
 		return
 	}
 	//sizeofLen := 2
@@ -107,7 +107,7 @@ func (state *stateGame) onNatsMsg(msg *nats.Msg) {
 	//	stdlib.L.Warn("NATS error", zap.Error(err))
 	//	return
 	//}
-	stdlib.L.Debug("header", zap.String("type", header.MessageType))
+	logger.L.Debug("header", zap.String("type", header.MessageType))
 
 	switch header.MessageType {
 	case "pb.Heartbeat":
