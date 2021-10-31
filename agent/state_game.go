@@ -5,8 +5,8 @@ import (
 	"encoding/binary"
 	"time"
 
-	"github.com/enjoypi/god"
 	"github.com/enjoypi/god/pb"
+	"github.com/enjoypi/god/stdlib"
 	sc "github.com/enjoypi/gostatechart"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
@@ -93,35 +93,35 @@ func (state *stateGame) onHeartbeat(event sc.Event) sc.Event {
 }
 
 func (state *stateGame) onNatsMsg(msg *nats.Msg) {
-	god.Logger.Debug("onNatsMsg", zap.String("subject", msg.Subject), zap.Int("size", len(msg.Data)))
+	stdlib.L.Debug("onNatsMsg", zap.String("subject", msg.Subject), zap.Int("size", len(msg.Data)))
 	buf := bytes.NewBuffer(msg.Data)
 	var l uint16
 	if err := binary.Read(buf, binary.LittleEndian, &l); err != nil {
-		god.Logger.Warn("onNatsMsg error", zap.Error(err))
+		stdlib.L.Warn("onNatsMsg error", zap.Error(err))
 		return
 	}
 	//sizeofLen := 2
 
 	var header pb.Header
 	//if err := header.Unmarshal(msg.Data[sizeofLen : sizeofLen+int(l)]); err != nil {
-	//	god.Logger.Warn("NATS error", zap.Error(err))
+	//	stdlib.L.Warn("NATS error", zap.Error(err))
 	//	return
 	//}
-	god.Logger.Debug("header", zap.String("type", header.MessageType))
+	stdlib.L.Debug("header", zap.String("type", header.MessageType))
 
 	switch header.MessageType {
 	case "pb.Heartbeat":
 		//msg0 := reflect.New(reflect.TypeOf(pb.Heartbeat{}).Elem()).Interface().(proto.Message)
 		req := &pb.Heartbeat{}
 		//if err := req.Unmarshal(msg.Data[sizeofLen+int(l)+sizeofLen:]); err != nil {
-		//	god.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
+		//	stdlib.L.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
 		//	return
 		//}
 		state.Outermost().PostEvent(req)
 	case "pb.Echo":
 		req := &pb.Echo{}
 		//if err := req.Unmarshal(msg.Data[sizeofLen+int(l)+sizeofLen:]); err != nil {
-		//	god.Logger.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
+		//	stdlib.L.Warn("NATS Unmarshal failed", zap.Error(err), zap.String("msgType", header.MessageType))
 		//	return
 		//}
 		state.Outermost().PostEvent(req)

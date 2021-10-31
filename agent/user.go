@@ -3,11 +3,13 @@ package agent
 import (
 	"math/rand"
 
-	"github.com/enjoypi/god/core"
+	"github.com/enjoypi/god/types"
+
+	"github.com/enjoypi/god/stdlib"
 )
 
 type UserAgent struct {
-	core.DefaultActor
+	stdlib.DefaultActor
 }
 
 var (
@@ -15,14 +17,14 @@ var (
 )
 
 func init() {
-	core.RegisterActorCreator(userAgentType, NewUserAgent)
+	stdlib.RegisterActorCreator(userAgentType, NewUserAgent)
 }
 
-func NewUserAgent() core.Actor {
+func NewUserAgent() stdlib.Actor {
 	return &UserAgent{}
 }
 
-func (u *UserAgent) Handle(message core.Message) core.Message {
+func (u *UserAgent) Handle(message types.Message) types.Message {
 	return nil
 }
 
