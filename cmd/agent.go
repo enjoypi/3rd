@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/enjoypi/god"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // doCmd represents the do command
@@ -14,7 +13,11 @@ var agentCommand = &cobra.Command{
 and usage of using your command.`,
 	PreRunE: preRunE,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return serveRun(rootViper)
+		if err := god.Initialize(rootViper); err != nil {
+			return err
+		}
+		god.Wait()
+		return nil
 	},
 }
 
@@ -40,12 +43,4 @@ func init() {
 
 	flags.String("node.type", "default", "service type")
 	flags.Uint16("node.id", 0, "service type")
-}
-
-func serveRun(v *viper.Viper) error {
-	if err := god.Initialize(rootViper); err != nil {
-		return err
-	}
-	god.Wait()
-	return nil
 }

@@ -150,7 +150,3 @@ func initRemoteConfig(v *viper.Viper) {
 	//	}
 	//}
 }
-
-func showConfig(v *viper.Viper) {
-
-}
