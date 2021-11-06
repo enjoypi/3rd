@@ -5,8 +5,8 @@ go 1.17
 //replace github.com/enjoypi/god => ../god
 
 require (
-	github.com/enjoypi/god v0.0.0-20211027024758-6465e54c4947
-	github.com/enjoypi/gostatechart v0.0.0-20201230085751-3ed111c7dc52
+	github.com/enjoypi/god v0.0.0-20211106160423-2801308c9c4e
+	github.com/enjoypi/gostatechart v0.0.0-20211106155708-bbc07dc92794
 	github.com/nats-io/nats.go v1.13.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
@@ -36,7 +36,7 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
-	golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359 // indirect
+	golang.org/x/sys v0.0.0-20211106132015-ebca88c72f68 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
 	gopkg.in/ini.v1 v1.63.2 // indirect
