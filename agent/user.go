@@ -1,21 +1,20 @@
 package agent
 
 import (
+	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
-
-	"github.com/enjoypi/god/stdlib"
 )
 
 type UserAgent struct {
-	stdlib.DefaultActor
+	actors.SimpleActor
 }
 
 func init() {
-	stdlib.RegisterActorCreator("agent", NewUserAgent)
+	actors.RegisterActorCreator("agent", NewUserAgent)
 }
 
-func NewUserAgent() stdlib.Actor {
+func NewUserAgent() actors.Actor {
 	return &UserAgent{}
 }
 
@@ -24,7 +23,7 @@ func (u *UserAgent) Handle(message types.Message) error {
 }
 
 func (u *UserAgent) Initialize(v *viper.Viper) error {
-	_ = u.DefaultActor.Initialize()
+	_ = u.SimpleActor.Initialize()
 	return nil
 }
 
