@@ -1,6 +1,8 @@
 package agent
 
 import (
+	"context"
+
 	"github.com/enjoypi/god/pb"
 	sc "github.com/enjoypi/gostatechart"
 )
@@ -17,7 +19,7 @@ func (state *stateAuth) GetTransitions() sc.Transitions {
 	return trans
 }
 
-func (state *stateAuth) Begin(context interface{}, event sc.Event) sc.Event {
+func (state *stateAuth) Begin(ctx context.Context, event sc.Event) sc.Event {
 	//state.Session = context.(*net.Session)
 	//var header pb.Header
 	//if err := state.Session.RecvMsg(&header); err != nil {
@@ -27,10 +29,10 @@ func (state *stateAuth) Begin(context interface{}, event sc.Event) sc.Event {
 	//if err := state.Session.RecvMsg(&req); err != nil {
 	//	return err
 	//}
-	return state.onAuthReq(&req)
+	return state.onAuthReq(ctx, &req)
 }
 
-func (state *stateAuth) onAuthReq(req *pb.AuthReq) sc.Event {
+func (state *stateAuth) onAuthReq(ctx context.Context, req *pb.AuthReq) sc.Event {
 	//session := state.Session
 
 	var ack pb.AuthAck

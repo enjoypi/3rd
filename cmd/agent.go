@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	_ "github.com/enjoypi/3rd/agent"
 	"github.com/enjoypi/god"
 	"github.com/spf13/cobra"
 )
@@ -37,8 +38,6 @@ func init() {
 
 	flags.String("nats.url", "nats://127.0.0.1:4222", "nats url")
 	//serveCmd.Flags().String("nats.readtimeout", "10s", "default ")
-
-	flags.String("socket.listenaddress", "127.0.0.1:1119", "listen address")
 
 	flags.StringArray("node.apps", nil, "service type")
 	flags.String("node.type", "default", "service type")

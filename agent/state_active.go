@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net"
@@ -12,11 +13,11 @@ type StateActive struct {
 	sc.SimpleState
 }
 
-func (state *StateActive) Begin(context interface{}, event sc.Event) sc.Event {
+func (state *StateActive) Begin(ctx context.Context, event sc.Event) sc.Event {
 	return nil
 }
 
-func (state *StateActive) End(event sc.Event) sc.Event {
+func (state *StateActive) End(ctx context.Context, event sc.Event) sc.Event {
 	return nil
 }
 

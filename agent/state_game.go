@@ -2,6 +2,7 @@ package agent
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"time"
 
@@ -20,7 +21,7 @@ type stateGame struct {
 	agentSub *nats.Subscription
 }
 
-func (state *stateGame) Begin(context interface{}, event sc.Event) sc.Event {
+func (state *stateGame) Begin(ctx context.Context, event sc.Event) sc.Event {
 	//state.Session = context.(*net.Session)
 
 	state.registerReactions()
@@ -78,14 +79,14 @@ func (state *stateGame) registerReactions() {
 	state.RegisterReaction((*pb.Heartbeat)(nil), state.onHeartbeat)
 }
 
-func (state *stateGame) onEcho(event sc.Event) sc.Event {
+func (state *stateGame) onEcho(ctx context.Context, event sc.Event, args ...interface{}) sc.Event {
 	//req := event.(*pb.Echo)
 	//return state.Node.CastTo(pb.ServiceType_Mesh, req)
 	//return state.Session.SendMsg(req)
 	return nil
 }
 
-func (state *stateGame) onHeartbeat(event sc.Event) sc.Event {
+func (state *stateGame) onHeartbeat(ctx context.Context, event sc.Event, args ...interface{}) sc.Event {
 	req := event.(*pb.Heartbeat)
 	req.ToTimestamp = time.Now().UnixNano()
 	//return state.Session.SendMsg(req)

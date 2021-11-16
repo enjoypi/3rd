@@ -1,6 +1,8 @@
 package agent
 
 import (
+	"context"
+
 	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/pb"
 	sc "github.com/enjoypi/gostatechart"
@@ -16,7 +18,7 @@ func (m *Manager) Begin(context interface{}, event sc.Event) sc.Event {
 	return nil
 }
 
-func (m *Manager) onHeader(event sc.Event) sc.Event {
+func (m *Manager) onHeader(ctx context.Context, event sc.Event, args ...interface{}) sc.Event {
 	logger.L.Info("onHeader", zap.Any("event", event))
 	return nil
 }
