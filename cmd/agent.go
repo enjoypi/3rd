@@ -28,7 +28,6 @@ func init() {
 
 	flags.String("mesh.advertiseaddress", "", "advertise address for grpc")
 	flags.String("mesh.defaulttimeout", "10s", "ttl to etcd")
-	flags.String("mesh.net.net.listenaddress", ":1119", "listen address for grpc")
 	flags.Int64("mesh.grantttl", 10, "ttl to etcd")
 	flags.String("mesh.path", "/nodes", "root path of mesh")
 	flags.Int("mesh.retrytimes", 10, "times to retry when dialing etcd")
@@ -39,8 +38,9 @@ func init() {
 	flags.String("nats.url", "nats://127.0.0.1:4222", "nats url")
 	//serveCmd.Flags().String("nats.readtimeout", "10s", "default ")
 
-	flags.String("net.listenaddress", "127.0.0.1:1119", "listen address")
+	flags.String("socket.listenaddress", "127.0.0.1:1119", "listen address")
 
+	flags.StringArray("node.apps", nil, "service type")
 	flags.String("node.type", "default", "service type")
 	flags.Uint16("node.id", 0, "service type")
 }

@@ -1,22 +1,22 @@
 package agent
 
 import (
-	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/def"
+	"github.com/enjoypi/god/stdlib"
 	"github.com/spf13/viper"
 )
 
 type UserAgent struct {
-	actors.SimpleActor
+	stdlib.SimpleActor
 }
 
-const atAgent = def.ATUser + 1
+const atAgent = "agent"
 
 func init() {
-	actors.RegisterActorCreator(atAgent, NewUserAgent)
+	stdlib.RegisterActorCreator(atAgent, NewUserAgent)
 }
 
-func NewUserAgent() actors.Actor {
+func NewUserAgent() stdlib.Actor {
 	return &UserAgent{}
 }
 

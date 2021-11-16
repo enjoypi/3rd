@@ -1,0 +1,28 @@
+etcd:
+  endpoints:
+    - 127.0.0.1:2379
+  permitwithoutstream: true
+log:
+  level: debug
+mesh:
+  advertiseaddress: ""
+  defaulttimeout: 10s
+  grantttl: 10
+  path: /nodes
+  retrytimes: 10
+nats:
+  url: nats://127.0.0.1:4222
+node:
+  apps:
+    - kernel
+    - socket
+  id: 1000
+  type: default
+# application socket
+socket:
+  listener:
+    - actortype: socketlistener
+      address: 127.0.0.1:1119
+      handler: agent
+      network: tcp
+verbose: false
