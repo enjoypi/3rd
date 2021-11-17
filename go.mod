@@ -2,10 +2,6 @@ module github.com/enjoypi/3rd
 
 go 1.17
 
-//replace github.com/enjoypi/god => ../god
-
-//replace github.com/enjoypi/gostatechart => ../gostatechart
-
 require (
 	github.com/enjoypi/god v0.0.0-20211116111738-ed9377cf9e0f
 	github.com/enjoypi/gostatechart v0.0.0-20211116104857-d824fb7bc7fd
